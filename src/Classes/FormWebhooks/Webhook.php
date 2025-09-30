@@ -1,6 +1,6 @@
 <?php
 
-namespace Dashed\DashedTernair\Classes\FormWebhooks;
+namespace Dashed\DashedLaposta\Classes\FormWebhooks;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;

@@ -1,12 +1,12 @@
 <?php
 
-namespace Dashed\DashedTernair\Livewire;
+namespace Dashed\DashedLaposta\Livewire;
 
 use Livewire\Component;
 use Filament\Notifications\Notification;
 use Dashed\DashedCore\Models\Customsetting;
 use Dashed\DashedTranslations\Models\Translation;
-use Dashed\DashedTernair\Classes\FormApis\NewsletterAPI;
+use Dashed\DashedLaposta\Classes\FormApis\NewsletterAPI;
 
 class Confirm extends Component
 {
@@ -32,11 +32,11 @@ class Confirm extends Component
         NewsletterAPI::confirm($this->aapKey, $this->tid);
 
         Notification::make()
-            ->body(Translation::get('confirmed-newsletter-subscription', 'ternair-newsletter', 'U bent aangemeld voor de nieuwsbrief.'))
+            ->body(Translation::get('confirmed-newsletter-subscription', 'laposta-newsletter', 'U bent aangemeld voor de nieuwsbrief.'))
             ->success()
             ->send();
 
-        $redirectUrl = linkHelper()->getUrl(Customsetting::get('ternair_redirect_after_confirm_url'));
+        $redirectUrl = linkHelper()->getUrl(Customsetting::get('laposta_redirect_after_confirm_url'));
         if ($redirectUrl != '#') {
             return redirect($redirectUrl);
         }
@@ -44,6 +44,6 @@ class Confirm extends Component
 
     public function render()
     {
-        return view(config('dashed-core.site_theme') . '.ternair-newsletter.confirm');
+        return view(config('dashed-core.site_theme') . '.laposta-newsletter.confirm');
     }
 }

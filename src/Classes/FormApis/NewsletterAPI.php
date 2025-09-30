@@ -1,6 +1,6 @@
 <?php
 
-namespace Dashed\DashedTernair\Classes\FormApis;
+namespace Dashed\DashedLaposta\Classes\FormApis;
 
 use Illuminate\Support\Facades\Http;
 use Filament\Forms\Components\Select;
@@ -14,7 +14,7 @@ class NewsletterAPI
 {
     public static function dispatch(FormInput $formInput, $api)
     {
-        if (! Customsetting::get('ternair_api_username') || ! Customsetting::get('ternair_api_password')) {
+        if (! Customsetting::get('laposta_api_username') || ! Customsetting::get('laposta_api_password')) {
             return;
         }
 
@@ -57,10 +57,10 @@ class NewsletterAPI
 
         $response = Http::withHeaders([
             'Content-Type' => 'application/json',
-            'X-API-Application' => Customsetting::get('ternair_x_api_application_header'),
+            'X-API-Application' => Customsetting::get('laposta_x_api_application_header'),
         ])
-            ->withBasicAuth(Customsetting::get('ternair_api_username'), Customsetting::get('ternair_api_password'))
-            ->post('https://campaign3-interact-api.ternairsoftware.com/subscription/newsletter', $data);
+            ->withBasicAuth(Customsetting::get('laposta_api_username'), Customsetting::get('laposta_api_password'))
+            ->post('https://campaign3-interact-api.lapostasoftware.com/subscription/newsletter', $data);
 
         if ($response->failed()) {
             $formInput->api_error = $response->body();
@@ -109,7 +109,7 @@ class NewsletterAPI
 
     public static function confirm(string $aapKey, ?string $tid = null): void
     {
-        if (! Customsetting::get('ternair_api_username') || ! Customsetting::get('ternair_api_password')) {
+        if (! Customsetting::get('laposta_api_username') || ! Customsetting::get('laposta_api_password')) {
             return;
         }
 
@@ -121,13 +121,13 @@ class NewsletterAPI
             $data['tid'] = $tid;
         }
 
-        $url = 'https://campaign3-interact-api.ternairsoftware.com/subscription/confirm' . '?' . http_build_query($data);
+        $url = 'https://campaign3-interact-api.lapostasoftware.com/subscription/confirm' . '?' . http_build_query($data);
 
         $response = Http::withHeaders([
             'Content-Type' => 'application/json',
-            'X-API-Application' => Customsetting::get('ternair_x_api_application_header'),
+            'X-API-Application' => Customsetting::get('laposta_x_api_application_header'),
         ])
-            ->withBasicAuth(Customsetting::get('ternair_api_username'), Customsetting::get('ternair_api_password'))
+            ->withBasicAuth(Customsetting::get('laposta_api_username'), Customsetting::get('laposta_api_password'))
             ->post($url);
 
         if ($response->failed() && app()->isLocal()) {
@@ -137,7 +137,7 @@ class NewsletterAPI
 
     public static function unsubscribe(string $ezineCode, string $tid): void
     {
-        if (! Customsetting::get('ternair_api_username') || ! Customsetting::get('ternair_api_password')) {
+        if (! Customsetting::get('laposta_api_username') || ! Customsetting::get('laposta_api_password')) {
             return;
         }
 
@@ -146,13 +146,13 @@ class NewsletterAPI
             'tid' => $tid,
         ];
 
-        $url = 'https://campaign3-interact-api.ternairsoftware.com/subscription/unsubscribe' . '?' . http_build_query($data);
+        $url = 'https://campaign3-interact-api.lapostasoftware.com/subscription/unsubscribe' . '?' . http_build_query($data);
 
         $response = Http::withHeaders([
             'Content-Type' => 'application/json',
-            'X-API-Application' => Customsetting::get('ternair_x_api_application_header'),
+            'X-API-Application' => Customsetting::get('laposta_x_api_application_header'),
         ])
-            ->withBasicAuth(Customsetting::get('ternair_api_username'), Customsetting::get('ternair_api_password'))
+            ->withBasicAuth(Customsetting::get('laposta_api_username'), Customsetting::get('laposta_api_password'))
             ->post($url);
 
         if ($response->failed() && app()->isLocal()) {

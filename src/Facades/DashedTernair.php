@@ -1,16 +1,16 @@
 <?php
 
-namespace Dashed\DashedTernair\Facades;
+namespace Dashed\DashedLaposta\Facades;
 
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @see \Dashed\DashedTernair\DashedTernair
+ * @see \Dashed\DashedLaposta\DashedLaposta
  */
-class DashedTernair extends Facade
+class DashedLaposta extends Facade
 {
     protected static function getFacadeAccessor()
     {
-        return 'dashed-ternair';
+        return 'dashed-laposta';
     }
 }

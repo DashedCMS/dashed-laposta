@@ -1,12 +1,12 @@
 <?php
 
-namespace Dashed\DashedTernair\Livewire;
+namespace Dashed\DashedLaposta\Livewire;
 
 use Livewire\Component;
 use Filament\Notifications\Notification;
 use Dashed\DashedCore\Models\Customsetting;
 use Dashed\DashedTranslations\Models\Translation;
-use Dashed\DashedTernair\Classes\FormApis\NewsletterAPI;
+use Dashed\DashedLaposta\Classes\FormApis\NewsletterAPI;
 
 class Unsubscribe extends Component
 {
@@ -30,11 +30,11 @@ class Unsubscribe extends Component
         NewsletterAPI::unsubscribe($this->ezineCode, $this->tid);
 
         Notification::make()
-            ->body(Translation::get('unsubscribed-from-newsletter', 'ternair-newsletter', 'U bent uitgeschreven van de nieuwsbrief.'))
+            ->body(Translation::get('unsubscribed-from-newsletter', 'laposta-newsletter', 'U bent uitgeschreven van de nieuwsbrief.'))
             ->success()
             ->send();
 
-        $redirectUrl = linkHelper()->getUrl(Customsetting::get('ternair_redirect_after_unsubscribe_url'));
+        $redirectUrl = linkHelper()->getUrl(Customsetting::get('laposta_redirect_after_unsubscribe_url'));
         if ($redirectUrl != '#') {
             return redirect($redirectUrl);
         }
@@ -42,6 +42,6 @@ class Unsubscribe extends Component
 
     public function render()
     {
-        return view(config('dashed-core.site_theme') . '.ternair-newsletter.unsubscribe');
+        return view(config('dashed-core.site_theme') . '.laposta-newsletter.unsubscribe');
     }
 }

@@ -1,23 +1,23 @@
 <?php
 
-namespace Dashed\DashedTernair;
+namespace Dashed\DashedLaposta;
 
 use Filament\Panel;
 use Filament\Contracts\Plugin;
-use Dashed\DashedTernair\Filament\Pages\Settings\DashedTernairSettingsPage;
+use Dashed\DashedLaposta\Filament\Pages\Settings\DashedLapostaSettingsPage;
 
-class DashedTernairPlugin implements Plugin
+class DashedLapostaPlugin implements Plugin
 {
     public function getId(): string
     {
-        return 'dashed-ternair';
+        return 'dashed-laposta';
     }
 
     public function register(Panel $panel): void
     {
         $panel
             ->pages([
-                DashedTernairSettingsPage::class,
+                DashedLapostaSettingsPage::class,
             ]);
     }
 

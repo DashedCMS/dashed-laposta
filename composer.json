@@ -1,12 +1,12 @@
 {
-    "name": "dashed/dashed-ternair",
-    "description": "This is my package dashed-ternair",
+    "name": "dashed/dashed-laposta",
+    "description": "This is my package dashed-laposta",
     "keywords": [
         "Dashed",
         "laravel",
-        "dashed-ternair"
+        "dashed-laposta"
     ],
-    "homepage": "https://github.com/Dashed-DEV/dashed-ternair",
+    "homepage": "https://github.com/Dashed-DEV/dashed-laposta",
     "license": "MIT",
     "authors": [
         {
@@ -27,13 +27,13 @@
     },
     "autoload": {
         "psr-4": {
-            "Dashed\\DashedTernair\\": "src",
-            "Dashed\\DashedTernair\\Database\\Factories\\": "database/factories"
+            "Dashed\\DashedLaposta\\": "src",
+            "Dashed\\DashedLaposta\\Database\\Factories\\": "database/factories"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Dashed\\DashedTernair\\Tests\\": "tests"
+            "Dashed\\DashedLaposta\\Tests\\": "tests"
         }
     },
     "scripts": {
@@ -50,10 +50,10 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Dashed\\DashedTernair\\DashedTernairServiceProvider"
+                "Dashed\\DashedLaposta\\DashedLapostaServiceProvider"
             ],
             "aliases": {
-                "Ternair": "Dashed\\DashedTernair\\Classes\\Ternair"
+                "Laposta": "Dashed\\DashedLaposta\\Classes\\Laposta"
             }
         }
     },
