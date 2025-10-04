@@ -3,6 +3,7 @@
 namespace Dashed\DashedLaposta\Filament\Pages\Settings;
 
 use Dashed\DashedLaposta\Classes\Laposta;
+use Filament\Forms\Components\Placeholder;
 use Filament\Pages\Page;
 use Filament\Forms\Components\Tabs;
 use Dashed\DashedCore\Classes\Sites;
@@ -43,6 +44,15 @@ class DashedLapostaSettingsPage extends Page
         $tabs = [];
         foreach ($sites as $site) {
             $schema = [
+                Placeholder::make('Laposta connected')
+                    ->content(function () use ($site) {
+                        $connected = Customsetting::get('laposta_connected', $site['id']);
+                        if ($connected) {
+                            return 'Verbonden';
+                        }
+                        return 'Niet verbonden';
+                    })
+                    ->columnSpan(2),
                 TextInput::make("laposta_api_key_{$site['id']}")
                     ->label('API key')
                     ->reactive(),
