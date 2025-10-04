@@ -31,14 +31,16 @@ class NewsletterAPI
             ->withHeaders([
                 'Content-Type' => 'application/json'
             ])
-            ->post(Laposta::baseUrl() . 'member', $data)
-            ->json();
+            ->post(Laposta::baseUrl() . 'member', $data);
 
-        if ($response->failed()) {
+        if ($response->failed() && !str($response->body())->contains('Email address exists')) {
             $formInput->api_error = $response->body();
+            $formInput->save();
+            return;
         }
 
-        $formInput->api_send = $response->successful() ? 1 : 2;
+        $formInput->api_error = null;
+        $formInput->api_send = 1;
         $formInput->save();
     }
 
