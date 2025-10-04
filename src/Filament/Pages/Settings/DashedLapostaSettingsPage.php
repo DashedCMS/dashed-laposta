@@ -44,7 +44,7 @@ class DashedLapostaSettingsPage extends Page
         $tabs = [];
         foreach ($sites as $site) {
             $schema = [
-                Placeholder::make('Laposta connected')
+                Placeholder::make('Laposta verbonden?')
                     ->content(function () use ($site) {
                         $connected = Customsetting::get('laposta_connected', $site['id']);
                         if ($connected) {
