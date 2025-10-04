@@ -2,6 +2,7 @@
 
 namespace Dashed\DashedLaposta\Filament\Pages\Settings;
 
+use Dashed\DashedLaposta\Classes\Laposta;
 use Filament\Pages\Page;
 use Filament\Forms\Components\Tabs;
 use Dashed\DashedCore\Classes\Sites;
@@ -27,15 +28,8 @@ class DashedLapostaSettingsPage extends Page
 
         $sites = Sites::getSites();
         foreach ($sites as $site) {
-            $formData["laposta_x_api_application_header_{$site['id']}"] = Customsetting::get('laposta_x_api_application_header', $site['id']);
-            $formData["laposta_api_username_{$site['id']}"] = Customsetting::get('laposta_api_username', $site['id']);
-            $formData["laposta_api_password_{$site['id']}"] = Customsetting::get('laposta_api_password', $site['id']);
-            foreach (Customsetting::get('laposta_redirect_after_confirm_url', $site['id'], type: 'array') ?: [] as $key => $value) {
-                $formData["laposta_redirect_after_confirm_url_{$site['id']}_{$key}"] = $value;
-            }
-            foreach (Customsetting::get('laposta_redirect_after_unsubscribe_url', $site['id'], type: 'array') ?: [] as $key => $value) {
-                $formData["laposta_redirect_after_unsubscribe_url_{$site['id']}_{$key}"] = $value;
-            }
+            $formData["laposta_api_key_{$site['id']}"] = Customsetting::get('laposta_api_key', $site['id']);
+            $formData["laposta_connected_{$site['id']}"] = Customsetting::get('laposta_connected', $site['id']);
         }
 
         $this->form->fill($formData);
@@ -49,27 +43,14 @@ class DashedLapostaSettingsPage extends Page
         $tabs = [];
         foreach ($sites as $site) {
             $schema = [
-                TextInput::make("laposta_x_api_application_header_{$site['id']}")
-                    ->label('X-API-Application-Header voor de Laposta API')
+                TextInput::make("laposta_api_key_{$site['id']}")
+                    ->label('API key')
                     ->reactive(),
-                TextInput::make("laposta_api_username_{$site['id']}")
-                    ->label('API username')
-                    ->reactive(),
-                TextInput::make("laposta_api_password_{$site['id']}")
-                    ->label('API wachtwoord')
-                    ->password()
-                    ->reactive(),
-                linkHelper()->field("laposta_redirect_after_confirm_url_{$site['id']}", false, 'Redirect na bevestigen'),
-                linkHelper()->field("laposta_redirect_after_unsubscribe_url_{$site['id']}", false, 'Redirect na uitschrijven'),
             ];
 
             $tabs[] = Tab::make($site['id'])
                 ->label(ucfirst($site['name']))
-                ->schema($schema)
-                ->columns([
-                    'default' => 1,
-                    'lg' => 2,
-                ]);
+                ->schema($schema);
         }
         $tabGroups[] = Tabs::make('Sites')
             ->tabs($tabs);
@@ -88,11 +69,12 @@ class DashedLapostaSettingsPage extends Page
         $formState = $this->form->getState();
 
         foreach ($sites as $site) {
-            Customsetting::set('laposta_x_api_application_header', $this->form->getState()["laposta_x_api_application_header_{$site['id']}"], $site['id']);
-            Customsetting::set('laposta_api_username', $this->form->getState()["laposta_api_username_{$site['id']}"], $site['id']);
-            Customsetting::set('laposta_api_password', $this->form->getState()["laposta_api_password_{$site['id']}"], $site['id']);
-            Customsetting::set('laposta_redirect_after_confirm_url', linkHelper()->getDataToSave($this->form->getState(), "laposta_redirect_after_confirm_url", $site['id']), $site['id']);
-            Customsetting::set('laposta_redirect_after_unsubscribe_url', linkHelper()->getDataToSave($this->form->getState(), "laposta_redirect_after_unsubscribe_url", $site['id']), $site['id']);
+            Customsetting::set('laposta_api_key', $this->form->getState()["laposta_api_key_{$site['id']}"], $site['id']);
+            $connected = Laposta::isConnected($site['id']);
+            Customsetting::set('laposta_connected', $connected, $site['id']);
+            if($connected){
+                Laposta::syncLists($site['id']);
+            }
         }
 
         $this->form->fill($formState);

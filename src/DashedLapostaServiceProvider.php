@@ -2,6 +2,8 @@
 
 namespace Dashed\DashedLaposta;
 
+use Dashed\DashedForms\Commands\SyncLapostaLists;
+use Illuminate\Console\Scheduling\Schedule;
 use Livewire\Livewire;
 use Spatie\LaravelPackageTools\Package;
 use Dashed\DashedLaposta\Livewire\Confirm;
@@ -17,8 +19,10 @@ class DashedLapostaServiceProvider extends PackageServiceProvider
 
     public function bootingPackage()
     {
-        Livewire::component('dashed-laposta.newsletter-confirm', Confirm::class);
-        Livewire::component('dashed-laposta.newsletter-unsubscribe', Unsubscribe::class);
+        $this->app->booted(function () {
+            $schedule = app(Schedule::class);
+            $schedule->command(SyncLapostaLists::class)->hourly();
+        });
     }
 
     public function configurePackage(Package $package): void
@@ -27,21 +31,11 @@ class DashedLapostaServiceProvider extends PackageServiceProvider
             __DIR__ . '/../resources/templates' => resource_path('views/' . config('dashed-core.site_theme')),
         ], 'dashed-templates');
 
-        cms()->registerSettingsPage(DashedLapostaSettingsPage::class, 'Dashed Laposta', 'bell', 'Beheer instellingen voor Laposta');
-
-        forms()->builder(
-            'webhookClasses',
-            array_merge(cms()->builder('webhookClasses'), [
-                'laposta-webhook-1' => [
-                    'name' => 'Laposta webhook',
-                    'class' => Webhook::class,
-                ],
-            ])
-        );
+        cms()->registerSettingsPage(DashedLapostaSettingsPage::class, 'Laposta', 'bell', 'Beheer instellingen voor Laposta');
 
         forms()->builder(
             'apiClasses',
-            array_merge(cms()->builder('apiClasses'), [
+            array_merge(forms()->builder('apiClasses'), [
                 'laposta-newsletters-api' => [
                     'name' => 'Laposta newsletter API',
                     'class' => NewsletterAPI::class,
