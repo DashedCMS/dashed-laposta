@@ -3,6 +3,8 @@
 namespace Dashed\DashedLaposta\Classes\FormApis;
 
 use Dashed\DashedLaposta\Classes\Laposta;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Get;
 use Illuminate\Support\Facades\Http;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
@@ -17,7 +19,7 @@ class NewsletterAPI
     {
         $apiKey = Customsetting::get('laposta_api_key');
 
-        if (!$apiKey || ! Customsetting::get('laposta_connected')) {
+        if (!$apiKey || !Customsetting::get('laposta_connected')) {
             return;
         }
 
@@ -26,6 +28,12 @@ class NewsletterAPI
         $data['source_url'] = $formInput->from_url;
         $data['list_id'] = $api['list_id'];
         $data['email'] = $formInput->formFields->where('form_field_id', $api['email_field_id'] ?? '')->first()->value ?? null;
+        foreach( $api['customFields'] as $customField ) {
+            $value = $formInput->formFields->where('form_field_id', $customField['field_id'] ?? '')->first()->value ?? null;
+            if ($value) {
+                $data['custom_fields'][$customField['field_name']] = $value;
+            }
+        }
 
         $response = Http::withBasicAuth($apiKey, '')
             ->withHeaders([
@@ -50,11 +58,11 @@ class NewsletterAPI
             Select::make('list_id')
                 ->label('Lijst om aan toe te voegen')
                 ->required()
-                ->options(function(){
+                ->options(function () {
                     $lists = Customsetting::get('laposta_lists');
                     $options = [];
                     if ($lists) {
-                        foreach($lists as $list){
+                        foreach ($lists as $list) {
                             $options[$list['list']['list_id']] = $list['list']['name'];
                         }
                     }
@@ -63,7 +71,19 @@ class NewsletterAPI
             Select::make('email_field_id')
                 ->label('Email veld')
                 ->required()
-                ->options(fn ($record) => $record ? $record->fields()->where('type', 'input')->where('input_type', 'email')->pluck('name', 'id') : []),
+                ->columnSpanFull()
+                ->options(fn($record) => $record ? $record->fields()->where('type', 'input')->where('input_type', 'email')->pluck('name', 'id') : []),
+            Repeater::make('customFields')
+                ->label('Aangepaste velden')
+                ->schema([
+                    Select::make('field_id')
+                        ->label('Veld')
+                        ->options(fn($record) => $record ? $record->fields()->where('type', 'input')->pluck('name', 'id') : []),
+                    TextInput::make('field_name')
+                        ->label('Veld naam in Laposta')
+                        ->required(),
+                ])
+                ->columnSpanFull(),
         ];
     }
 
