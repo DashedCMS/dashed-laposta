@@ -3,21 +3,23 @@
 namespace Dashed\DashedLaposta\Filament\Pages\Settings;
 
 use Dashed\DashedLaposta\Classes\Laposta;
-use Filament\Forms\Components\Placeholder;
+
 use Filament\Pages\Page;
-use Filament\Forms\Components\Tabs;
+use Filament\Schemas\Components\Tabs;
 use Dashed\DashedCore\Classes\Sites;
-use Filament\Forms\Components\Tabs\Tab;
+use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Dashed\DashedCore\Models\Customsetting;
 
+use Filament\Infolists\Components\TextEntry;
+
 class DashedLapostaSettingsPage extends Page
 {
-    protected static ?string $navigationIcon = 'heroicon-o-bell';
+    protected static string | BackedEnum | null $navigationIcon = 'heroicon-o-bell';
     protected static bool $shouldRegisterNavigation = false;
     protected static ?string $navigationLabel = 'Laposta instellingen';
-    protected static ?string $navigationGroup = 'Overige';
+    protected static string | UnitEnum | null $navigationGroup = 'Overige';
     protected static ?string $title = 'Laposta instellingen';
 
     protected static string $view = 'dashed-core::settings.pages.default-settings';
@@ -44,8 +46,8 @@ class DashedLapostaSettingsPage extends Page
         $tabs = [];
         foreach ($sites as $site) {
             $schema = [
-                Placeholder::make('Laposta verbonden?')
-                    ->content(function () use ($site) {
+                TextEntry::make('Laposta verbonden?')
+                    ->state(function () use ($site) {
                         $connected = Customsetting::get('laposta_connected', $site['id']);
                         if ($connected) {
                             return 'Verbonden';
