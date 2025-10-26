@@ -2,16 +2,14 @@
 
 namespace Dashed\DashedLaposta\Filament\Pages\Settings;
 
-use Dashed\DashedLaposta\Classes\Laposta;
-
 use Filament\Pages\Page;
-use Filament\Schemas\Components\Tabs;
 use Dashed\DashedCore\Classes\Sites;
-use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Tabs;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Dashed\DashedLaposta\Classes\Laposta;
+use Filament\Schemas\Components\Tabs\Tab;
 use Dashed\DashedCore\Models\Customsetting;
-
 use Filament\Infolists\Components\TextEntry;
 
 class DashedLapostaSettingsPage extends Page
@@ -52,6 +50,7 @@ class DashedLapostaSettingsPage extends Page
                         if ($connected) {
                             return 'Verbonden';
                         }
+
                         return 'Niet verbonden';
                     })
                     ->columnSpan(2),
@@ -84,7 +83,7 @@ class DashedLapostaSettingsPage extends Page
             Customsetting::set('laposta_api_key', $this->form->getState()["laposta_api_key_{$site['id']}"], $site['id']);
             $connected = Laposta::isConnected($site['id']);
             Customsetting::set('laposta_connected', $connected, $site['id']);
-            if($connected){
+            if ($connected) {
                 Laposta::syncLists($site['id']);
             }
         }

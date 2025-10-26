@@ -2,13 +2,9 @@
 
 namespace Dashed\DashedLaposta;
 
-use Dashed\DashedForms\Commands\SyncLapostaLists;
-use Illuminate\Console\Scheduling\Schedule;
-use Livewire\Livewire;
 use Spatie\LaravelPackageTools\Package;
-use Dashed\DashedLaposta\Livewire\Confirm;
-use Dashed\DashedLaposta\Livewire\Unsubscribe;
-use Dashed\DashedLaposta\Classes\FormWebhooks\Webhook;
+use Illuminate\Console\Scheduling\Schedule;
+use Dashed\DashedForms\Commands\SyncLapostaLists;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Dashed\DashedLaposta\Classes\FormApis\NewsletterAPI;
 use Dashed\DashedLaposta\Filament\Pages\Settings\DashedLapostaSettingsPage;

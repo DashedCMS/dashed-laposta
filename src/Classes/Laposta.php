@@ -15,42 +15,42 @@ class Laposta
 
     public static function isConnected(?string $siteId = null): bool
     {
-        if (!$siteId) {
+        if (! $siteId) {
             $siteId = Sites::getActive();
         }
 
         $apiKey = Customsetting::get('laposta_api_key', $siteId);
-        if (!$apiKey) {
+        if (! $apiKey) {
             return false;
         }
 
         $response = Http::withBasicAuth($apiKey, '')
             ->withHeaders([
-                'Content-Type' => 'application/json'
+                'Content-Type' => 'application/json',
             ])
             ->get(self::baseUrl() . 'list');
 
         if ($response->status() === 200) {
             return true;
-        }else{
+        } else {
             return false;
         }
     }
 
     public static function syncLists(?string $siteId = null): void
     {
-        if (!$siteId) {
+        if (! $siteId) {
             $siteId = Sites::getActive();
         }
 
         $apiKey = Customsetting::get('laposta_api_key', $siteId);
-        if (!$apiKey) {
+        if (! $apiKey) {
             return;
         }
 
         $response = Http::withBasicAuth($apiKey, '')
             ->withHeaders([
-                'Content-Type' => 'application/json'
+                'Content-Type' => 'application/json',
             ])
             ->get(self::baseUrl() . 'list')
             ->json();

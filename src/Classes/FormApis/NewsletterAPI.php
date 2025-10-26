@@ -2,15 +2,12 @@
 
 namespace Dashed\DashedLaposta\Classes\FormApis;
 
-use Dashed\DashedLaposta\Classes\Laposta;
-use Filament\Forms\Components\Repeater;
-use Filament\Schemas\Components\Utilities\Get;
 use Illuminate\Support\Facades\Http;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Toggle;
-use Illuminate\Support\Facades\Storage;
+use Filament\Forms\Components\Repeater;
 use Dashed\DashedForms\Models\FormInput;
 use Filament\Forms\Components\TextInput;
+use Dashed\DashedLaposta\Classes\Laposta;
 use Dashed\DashedCore\Models\Customsetting;
 
 class NewsletterAPI
@@ -19,7 +16,7 @@ class NewsletterAPI
     {
         $apiKey = Customsetting::get('laposta_api_key');
 
-        if (!$apiKey || !Customsetting::get('laposta_connected')) {
+        if (! $apiKey || ! Customsetting::get('laposta_connected')) {
             return;
         }
 
@@ -28,7 +25,7 @@ class NewsletterAPI
         $data['source_url'] = $formInput->from_url;
         $data['list_id'] = $api['list_id'];
         $data['email'] = $formInput->formFields->where('form_field_id', $api['email_field_id'] ?? '')->first()->value ?? null;
-        foreach( $api['customFields'] as $customField ) {
+        foreach ($api['customFields'] as $customField) {
             $value = $formInput->formFields->where('form_field_id', $customField['field_id'] ?? '')->first()->value ?? null;
             if ($value) {
                 $data['custom_fields'][$customField['field_name']] = $value;
@@ -37,13 +34,14 @@ class NewsletterAPI
 
         $response = Http::withBasicAuth($apiKey, '')
             ->withHeaders([
-                'Content-Type' => 'application/json'
+                'Content-Type' => 'application/json',
             ])
             ->post(Laposta::baseUrl() . 'member', $data);
 
-        if ($response->failed() && !str($response->body())->contains('Email address exists')) {
+        if ($response->failed() && ! str($response->body())->contains('Email address exists')) {
             $formInput->api_error = $response->body();
             $formInput->save();
+
             return;
         }
 
@@ -66,19 +64,20 @@ class NewsletterAPI
                             $options[$list['list']['list_id']] = $list['list']['name'];
                         }
                     }
+
                     return $options;
                 }),
             Select::make('email_field_id')
                 ->label('Email veld')
                 ->required()
                 ->columnSpanFull()
-                ->options(fn($record) => $record ? $record->fields()->where('type', 'input')->where('input_type', 'email')->pluck('name', 'id') : []),
+                ->options(fn ($record) => $record ? $record->fields()->where('type', 'input')->where('input_type', 'email')->pluck('name', 'id') : []),
             Repeater::make('customFields')
                 ->label('Aangepaste velden')
                 ->schema([
                     Select::make('field_id')
                         ->label('Veld')
-                        ->options(fn($record) => $record ? $record->fields()->where('type', 'input')->pluck('name', 'id') : []),
+                        ->options(fn ($record) => $record ? $record->fields()->where('type', 'input')->pluck('name', 'id') : []),
                     TextInput::make('field_name')
                         ->label('Veld naam in Laposta')
                         ->required(),
@@ -86,5 +85,4 @@ class NewsletterAPI
                 ->columnSpanFull(),
         ];
     }
-
 }

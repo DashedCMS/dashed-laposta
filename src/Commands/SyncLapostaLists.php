@@ -2,10 +2,9 @@
 
 namespace Dashed\DashedForms\Commands;
 
+use Illuminate\Console\Command;
 use Dashed\DashedCore\Classes\Sites;
 use Dashed\DashedLaposta\Classes\Laposta;
-use Illuminate\Console\Command;
-use Dashed\DashedForms\Models\FormInput;
 
 class SyncLapostaLists extends Command
 {
