@@ -11,6 +11,8 @@ use Dashed\DashedLaposta\Classes\Laposta;
 use Filament\Schemas\Components\Tabs\Tab;
 use Dashed\DashedCore\Models\Customsetting;
 use Filament\Infolists\Components\TextEntry;
+use BackedEnum;
+use UnitEnum;
 
 class DashedLapostaSettingsPage extends Page
 {
@@ -20,7 +22,7 @@ class DashedLapostaSettingsPage extends Page
     protected static string | UnitEnum | null $navigationGroup = 'Overige';
     protected static ?string $title = 'Laposta instellingen';
 
-    protected static string $view = 'dashed-core::settings.pages.default-settings';
+    protected string $view = 'dashed-core::settings.pages.default-settings';
     public array $data = [];
 
     public function mount(): void
