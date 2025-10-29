@@ -4,7 +4,7 @@ namespace Dashed\DashedLaposta;
 
 use Spatie\LaravelPackageTools\Package;
 use Illuminate\Console\Scheduling\Schedule;
-use Dashed\DashedForms\Commands\SyncLapostaLists;
+use Dashed\DashedLaposta\Commands\SyncLapostaLists;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Dashed\DashedLaposta\Classes\FormApis\NewsletterAPI;
 use Dashed\DashedLaposta\Filament\Pages\Settings\DashedLapostaSettingsPage;
@@ -40,7 +40,10 @@ class DashedLapostaServiceProvider extends PackageServiceProvider
         );
 
         $package
-            ->name('dashed-laposta');
+            ->name('dashed-laposta')
+            ->hasCommands([
+                SyncLapostaLists::class,
+            ]);
 
         cms()->builder('plugins', [
             new DashedLapostaPlugin(),

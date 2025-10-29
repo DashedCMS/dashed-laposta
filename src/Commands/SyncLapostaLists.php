@@ -1,6 +1,6 @@
 <?php
 
-namespace Dashed\DashedForms\Commands;
+namespace Dashed\DashedLaposta\Commands;
 
 use Illuminate\Console\Command;
 use Dashed\DashedCore\Classes\Sites;
