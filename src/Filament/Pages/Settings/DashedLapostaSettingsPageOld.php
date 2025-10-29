@@ -1,20 +1,16 @@
-<?php
+<?php namespace Dashed\DashedLaposta\Filament\Pages\Settings;
 
-namespace Dashed\DashedLaposta\Filament\Pages\Settings;
-
-use Dashed\DashedLaposta\Classes\Laposta;
-use UnitEnum;
-use BackedEnum;
 use Filament\Pages\Page;
-use Filament\Schemas\Schema;
 use Dashed\DashedCore\Classes\Sites;
 use Filament\Schemas\Components\Tabs;
-use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Dashed\DashedLaposta\Classes\Laposta;
 use Filament\Schemas\Components\Tabs\Tab;
 use Dashed\DashedCore\Models\Customsetting;
 use Filament\Infolists\Components\TextEntry;
+use BackedEnum;
+use UnitEnum;
 
 class DashedLapostaSettingsPage extends Page
 {
@@ -54,7 +50,6 @@ class DashedLapostaSettingsPage extends Page
             $tabs[] = Tab::make($site['id'])->label(ucfirst($site['name']))->schema($newSchema);
         }
         $tabGroups[] = Tabs::make('Sites')->tabs($tabs);
-
         return $schema->schema($tabGroups)->statePath('data');
     }
 
