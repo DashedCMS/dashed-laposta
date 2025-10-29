@@ -2,16 +2,15 @@
 
 namespace Dashed\DashedLaposta\Filament\Pages\Settings;
 
-use Dashed\DashedLaposta\Classes\Laposta;
 use UnitEnum;
 use BackedEnum;
 use Filament\Pages\Page;
 use Filament\Schemas\Schema;
 use Dashed\DashedCore\Classes\Sites;
 use Filament\Schemas\Components\Tabs;
-use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Dashed\DashedLaposta\Classes\Laposta;
 use Filament\Schemas\Components\Tabs\Tab;
 use Dashed\DashedCore\Models\Customsetting;
 use Filament\Infolists\Components\TextEntry;
@@ -49,6 +48,7 @@ class DashedLapostaSettingsPage extends Page
                 if ($connected) {
                     return 'Verbonden';
                 }
+
                 return 'Niet verbonden';
             })->columnSpan(2), TextInput::make("laposta_api_key_{$site['id']}")->label('API key')->reactive(),];
             $tabs[] = Tab::make($site['id'])->label(ucfirst($site['name']))->schema($newSchema);

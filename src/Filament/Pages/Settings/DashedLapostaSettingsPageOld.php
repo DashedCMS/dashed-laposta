@@ -1,5 +1,9 @@
-<?php namespace Dashed\DashedLaposta\Filament\Pages\Settings;
+<?php
 
+namespace Dashed\DashedLaposta\Filament\Pages\Settings;
+
+use UnitEnum;
+use BackedEnum;
 use Filament\Pages\Page;
 use Dashed\DashedCore\Classes\Sites;
 use Filament\Schemas\Components\Tabs;
@@ -9,8 +13,6 @@ use Dashed\DashedLaposta\Classes\Laposta;
 use Filament\Schemas\Components\Tabs\Tab;
 use Dashed\DashedCore\Models\Customsetting;
 use Filament\Infolists\Components\TextEntry;
-use BackedEnum;
-use UnitEnum;
 
 class DashedLapostaSettingsPage extends Page
 {
@@ -45,11 +47,13 @@ class DashedLapostaSettingsPage extends Page
                 if ($connected) {
                     return 'Verbonden';
                 }
+
                 return 'Niet verbonden';
             })->columnSpan(2), TextInput::make("laposta_api_key_{$site['id']}")->label('API key')->reactive(),];
             $tabs[] = Tab::make($site['id'])->label(ucfirst($site['name']))->schema($newSchema);
         }
         $tabGroups[] = Tabs::make('Sites')->tabs($tabs);
+
         return $schema->schema($tabGroups)->statePath('data');
     }
 
