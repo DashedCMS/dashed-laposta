@@ -2,6 +2,7 @@
 
 namespace Dashed\DashedLaposta;
 
+use Dashed\DashedLaposta\Classes\FormApis\OrderAPI;
 use Spatie\LaravelPackageTools\Package;
 use Illuminate\Console\Scheduling\Schedule;
 use Dashed\DashedLaposta\Commands\SyncLapostaLists;
@@ -35,6 +36,16 @@ class DashedLapostaServiceProvider extends PackageServiceProvider
                 'laposta-newsletters-api' => [
                     'name' => 'Laposta newsletter API',
                     'class' => NewsletterAPI::class,
+                ],
+            ])
+        );
+
+        forms()->builder(
+            'orderApiClasses',
+            array_merge(forms()->builder('orderApiClasses'), [
+                'laposta-order-api' => [
+                    'name' => 'Laposta bestelling API',
+                    'class' => OrderAPI::class,
                 ],
             ])
         );
