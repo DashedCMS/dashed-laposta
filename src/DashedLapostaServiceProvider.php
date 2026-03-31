@@ -2,9 +2,9 @@
 
 namespace Dashed\DashedLaposta;
 
-use Dashed\DashedLaposta\Classes\FormApis\OrderAPI;
 use Spatie\LaravelPackageTools\Package;
 use Illuminate\Console\Scheduling\Schedule;
+use Dashed\DashedLaposta\Classes\FormApis\OrderAPI;
 use Dashed\DashedLaposta\Commands\SyncLapostaLists;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Dashed\DashedLaposta\Classes\FormApis\NewsletterAPI;
@@ -25,7 +25,7 @@ class DashedLapostaServiceProvider extends PackageServiceProvider
     public function configurePackage(Package $package): void
     {
         $this->publishes([
-            __DIR__ . '/../resources/templates' => resource_path('views/' . config('dashed-core.site_theme')),
+            __DIR__ . '/../resources/templates' => resource_path('views/' . config('dashed-core.site_theme', 'dashed')),
         ], 'dashed-templates');
 
         cms()->registerSettingsPage(DashedLapostaSettingsPage::class, 'Laposta', 'bell', 'Beheer instellingen voor Laposta');

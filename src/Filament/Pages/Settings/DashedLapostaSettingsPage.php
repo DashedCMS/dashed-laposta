@@ -13,10 +13,13 @@ use Filament\Notifications\Notification;
 use Dashed\DashedLaposta\Classes\Laposta;
 use Filament\Schemas\Components\Tabs\Tab;
 use Dashed\DashedCore\Models\Customsetting;
+use Dashed\DashedCore\Traits\HasSettingsPermission;
 use Filament\Infolists\Components\TextEntry;
 
 class DashedLapostaSettingsPage extends Page
 {
+    use HasSettingsPermission;
+
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-bell';
     protected static bool $shouldRegisterNavigation = false;
     protected static ?string $navigationLabel = 'Laposta instellingen';

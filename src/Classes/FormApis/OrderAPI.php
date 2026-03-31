@@ -2,15 +2,14 @@
 
 namespace Dashed\DashedLaposta\Classes\FormApis;
 
-use Dashed\DashedEcommerceCore\Models\Order;
-use Dashed\DashedEcommerceCore\Models\OrderLog;
 use Illuminate\Support\Facades\Http;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Repeater;
-use Dashed\DashedForms\Models\FormInput;
 use Filament\Forms\Components\TextInput;
 use Dashed\DashedLaposta\Classes\Laposta;
 use Dashed\DashedCore\Models\Customsetting;
+use Dashed\DashedEcommerceCore\Models\Order;
+use Dashed\DashedEcommerceCore\Models\OrderLog;
 
 class OrderAPI
 {
@@ -18,7 +17,7 @@ class OrderAPI
     {
         $apiKey = Customsetting::get('laposta_api_key');
 
-        if (!$apiKey || !Customsetting::get('laposta_connected')) {
+        if (! $apiKey || ! Customsetting::get('laposta_connected')) {
             return;
         }
 
@@ -42,10 +41,11 @@ class OrderAPI
                 ->post(Laposta::baseUrl() . 'member', $data);
         } catch (\Exception $e) {
             OrderLog::createLog($order->id, note: 'Fout bij toevoegen aan Laposta lijst ' . $data['list_id'] . ' : ' . $e->getMessage());
+
             return;
         }
 
-        if (!$response || $response->failed()) {
+        if (! $response || $response->failed()) {
             OrderLog::createLog($order->id, note: 'Fout bij toevoegen aan Laposta lijst ' . $data['list_id'] . ' : ' . ($response->body() ?? 'Geen response van Laposta API'));
         } else {
             OrderLog::createLog($order->id, note: 'Succesvol toegevoegd aan Laposta lijst ' . $data['list_id'] . ' .');
