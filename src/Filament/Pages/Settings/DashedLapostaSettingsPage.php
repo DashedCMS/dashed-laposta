@@ -13,8 +13,8 @@ use Filament\Notifications\Notification;
 use Dashed\DashedLaposta\Classes\Laposta;
 use Filament\Schemas\Components\Tabs\Tab;
 use Dashed\DashedCore\Models\Customsetting;
-use Dashed\DashedCore\Traits\HasSettingsPermission;
 use Filament\Infolists\Components\TextEntry;
+use Dashed\DashedCore\Traits\HasSettingsPermission;
 
 class DashedLapostaSettingsPage extends Page
 {
