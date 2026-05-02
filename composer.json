@@ -34,7 +34,10 @@
     "autoload-dev": {
         "psr-4": {
             "Dashed\\DashedLaposta\\Tests\\": "tests"
-        }
+        },
+        "files": [
+            "tests/stubs/dashed-core-stubs.php"
+        ]
     },
     "scripts": {
         "analyse": "vendor/bin/phpstan analyse",

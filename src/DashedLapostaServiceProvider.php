@@ -8,6 +8,7 @@ use Dashed\DashedLaposta\Classes\FormApis\OrderAPI;
 use Dashed\DashedLaposta\Commands\SyncLapostaLists;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Dashed\DashedLaposta\Classes\FormApis\NewsletterAPI;
+use Dashed\DashedLaposta\Classes\PopupApis\PopupAPI as PopupNewsletterAPI;
 use Dashed\DashedLaposta\Filament\Pages\Settings\DashedLapostaSettingsPage;
 
 class DashedLapostaServiceProvider extends PackageServiceProvider
@@ -71,6 +72,16 @@ MARKDOWN,
                 'laposta-order-api' => [
                     'name' => 'Laposta bestelling API',
                     'class' => OrderAPI::class,
+                ],
+            ])
+        );
+
+        forms()->builder(
+            'popupApiClasses',
+            array_merge(forms()->builder('popupApiClasses'), [
+                'laposta-popup-api' => [
+                    'name' => 'Laposta nieuwsbrief',
+                    'class' => PopupNewsletterAPI::class,
                 ],
             ])
         );
