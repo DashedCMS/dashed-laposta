@@ -9,6 +9,7 @@ use Filament\Forms\Components\TextInput;
 use Dashed\DashedLaposta\Classes\Laposta;
 use Dashed\DashedPopups\Models\PopupView;
 use Dashed\DashedCore\Models\Customsetting;
+use Dashed\DashedPopups\Exceptions\NewsletterRateLimitException;
 
 class PopupAPI
 {
@@ -38,8 +39,24 @@ class PopupAPI
             ->withHeaders(['Content-Type' => 'application/json'])
             ->post(Laposta::baseUrl().'member', $data);
 
-        if ($response->failed() && ! str($response->body())->contains('Email address exists')) {
-            throw new \RuntimeException('Laposta error for list '.($api['list_id'] ?? '?').': '.$response->body());
+        if ($response->failed()) {
+            $body = $response->body();
+
+            if ($response->status() === 429 || str($body)->contains('Rate limit exceeded')) {
+                $retryAfter = (int) ($response->header('Retry-After') ?: 60);
+                if (preg_match('/(\d+)\s*seconds?/i', $body, $m)) {
+                    $retryAfter = max($retryAfter, (int) $m[1]);
+                }
+
+                throw new NewsletterRateLimitException(
+                    'Laposta rate limited for list '.($api['list_id'] ?? '?').' (retry after '.$retryAfter.'s)',
+                    $retryAfter,
+                );
+            }
+
+            if (! str($body)->contains('Email address exists')) {
+                throw new \RuntimeException('Laposta error for list '.($api['list_id'] ?? '?').': '.$body);
+            }
         }
     }
 
