@@ -2,6 +2,11 @@
 
 All notable changes to `dashed-laposta` will be documented in this file.
 
+## v4.0.12 - 2026-05-02
+
+### Fixed
+- `PopupAPI` herkent nu Laposta's 429 rate-limit response en gooit een `NewsletterRateLimitException` (uit dashed-popups) met geparseerde `retryAfter`-seconds. De queue-job in dashed-popups vangt die op en doet `release($delay)` zodat de andere submissions in dezelfde backfill-run niet ook crashen. Vereist `dashed-popups` v4.9.3+.
+
 ## v4.0.11 - 2026-05-02
 
 ### Added
