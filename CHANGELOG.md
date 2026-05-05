@@ -2,6 +2,11 @@
 
 All notable changes to `dashed-laposta` will be documented in this file.
 
+## v4.0.14 - 2026-05-05
+
+### Added
+- `Classes\FormApis\OrderAPI` implementeert nu ook `Dashed\DashedEcommerceCore\Contracts\SupportsEmailBackfill`. Reden: de meeste Laposta-installaties hebben alleen `OrderAPI` in de Order-APIs Repeater geconfigureerd (de koppeling die bij elke betaalde order afgaat), niet de `NewsletterAPI`. Zonder backfill-support op `OrderAPI` deed de "Bestaande e-mails synchroniseren"-knop op de OrderSettingsPage niets, alle (email, api)-combinaties werden geskipped. `OrderAPI::syncEmail()` is identiek aan `NewsletterAPI::syncEmail()`: zelfde `list_id`-veld + zelfde Laposta `member`-endpoint.
+
 ## v4.0.13 - 2026-05-05
 
 ### Added
