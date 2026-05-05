@@ -2,6 +2,11 @@
 
 All notable changes to `dashed-laposta` will be documented in this file.
 
+## v4.0.13 - 2026-05-05
+
+### Added
+- `Classes\FormApis\NewsletterAPI` implementeert nu `Dashed\DashedEcommerceCore\Contracts\SupportsEmailBackfill`. Nieuwe `syncEmail(string $email, ?string $firstName, ?string $lastName, array $api): array` voegt een (email, voornaam, achternaam) toe aan de geconfigureerde Laposta lijst (`list_id` uit het API-config-blok). Gebruikt dezelfde `laposta_api_key` + `laposta_connected` Customsettings als de bestaande `dispatch`-paden, zodat de nieuwe `OrderSettingsPage` "Bestaande e-mails synchroniseren"-actie in dashed-ecommerce-core v4.9.0 kan backfillen. "Email address exists" wordt geslikt als success. Vereist dashed-ecommerce-core v4.9.0+.
+
 ## v4.0.12 - 2026-05-02
 
 ### Fixed

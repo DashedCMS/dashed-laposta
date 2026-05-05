@@ -9,8 +9,9 @@ use Dashed\DashedForms\Models\FormInput;
 use Filament\Forms\Components\TextInput;
 use Dashed\DashedLaposta\Classes\Laposta;
 use Dashed\DashedCore\Models\Customsetting;
+use Dashed\DashedEcommerceCore\Contracts\SupportsEmailBackfill;
 
-class NewsletterAPI
+class NewsletterAPI implements SupportsEmailBackfill
 {
     public static function dispatch(FormInput $formInput, $api)
     {
@@ -84,5 +85,62 @@ class NewsletterAPI
                 ])
                 ->columnSpanFull(),
         ];
+    }
+
+    /**
+     * Backfill-pad: voegt een (email, voornaam, achternaam) toe aan de geconfigureerde Laposta lijst.
+     */
+    public static function syncEmail(string $email, ?string $firstName, ?string $lastName, array $api): array
+    {
+        $apiKey = Customsetting::get('laposta_api_key');
+
+        if (! $apiKey || ! Customsetting::get('laposta_connected')) {
+            return ['status' => 'skipped', 'error' => 'Laposta niet geconfigureerd of niet verbonden'];
+        }
+
+        if (empty($api['list_id'])) {
+            return ['status' => 'skipped', 'error' => 'Geen list_id geconfigureerd'];
+        }
+
+        if (! filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return ['status' => 'skipped', 'error' => 'Ongeldig e-mailadres'];
+        }
+
+        $data = [
+            'list_id' => $api['list_id'],
+            'email' => $email,
+            'ip' => '0.0.0.0',
+            'source_url' => config('app.url'),
+        ];
+
+        $customFields = [];
+        if ($firstName !== null && $firstName !== '') {
+            $customFields['first_name'] = $firstName;
+        }
+        if ($lastName !== null && $lastName !== '') {
+            $customFields['last_name'] = $lastName;
+        }
+        if (! empty($customFields)) {
+            $data['custom_fields'] = $customFields;
+        }
+
+        try {
+            $response = Http::withBasicAuth($apiKey, '')
+                ->withHeaders(['Content-Type' => 'application/json'])
+                ->post(Laposta::baseUrl() . 'member', $data);
+        } catch (\Throwable $e) {
+            return ['status' => 'failed', 'error' => mb_substr($e->getMessage(), 0, 1000)];
+        }
+
+        if ($response->successful()) {
+            return ['status' => 'success', 'error' => null];
+        }
+
+        $body = (string) $response->body();
+        if (str_contains($body, 'Email address exists')) {
+            return ['status' => 'success', 'error' => null];
+        }
+
+        return ['status' => 'failed', 'error' => mb_substr($body, 0, 1000)];
     }
 }
