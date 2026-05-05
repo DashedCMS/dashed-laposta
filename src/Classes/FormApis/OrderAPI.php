@@ -141,6 +141,22 @@ class OrderAPI implements SupportsEmailBackfill
         }
 
         $body = (string) $response->body();
+        $decoded = json_decode($body, true);
+        $message = $decoded['error']['message'] ?? '';
+
+        // Laposta rate-limit signaal. De backfill-job vangt dit op en
+        // released zichzelf naar de queue met een delay.
+        if ($response->status() === 429 || str_contains($message, 'Rate limit')) {
+            $retryAfter = 60;
+            if (preg_match('/(\d+)\s*second/i', $message, $m)) {
+                $retryAfter = max(1, (int) $m[1]);
+            } elseif ($response->header('Retry-After')) {
+                $retryAfter = max(1, (int) $response->header('Retry-After'));
+            }
+
+            return ['status' => 'rate_limited', 'retry_after' => $retryAfter, 'error' => $message ?: 'Rate limit'];
+        }
+
         if (str_contains($body, 'Email address exists')) {
             return ['status' => 'success', 'error' => null];
         }

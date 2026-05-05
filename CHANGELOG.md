@@ -2,6 +2,11 @@
 
 All notable changes to `dashed-laposta` will be documented in this file.
 
+## v4.0.15 - 2026-05-05
+
+### Added
+- `NewsletterAPI::syncEmail()` en `OrderAPI::syncEmail()` detecteren nu Laposta rate-limit responses (HTTP 429 of error-message bevat "Rate limit") en returnen `['status' => 'rate_limited', 'retry_after' => N]`. Het aantal seconden wordt geparsed uit de Laposta error-message ("Rate limit exceeded, try again after 56 seconds") of de `Retry-After` header. De BackfillApiSubscriptionsJob in dashed-ecommerce-core v4.9.2+ vangt dit signaal op en released zichzelf naar de queue. Vereist dashed-ecommerce-core v4.9.2+ voor de retry-flow.
+
 ## v4.0.14 - 2026-05-05
 
 ### Added
