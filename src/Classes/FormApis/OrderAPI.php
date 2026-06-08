@@ -16,6 +16,11 @@ class OrderAPI implements SupportsEmailBackfill
 {
     public static function dispatch(Order $order, $api)
     {
+        // Bol.com-bestellingen mogen nooit naar Laposta (marketing).
+        if ((string) ($order->order_origin ?? '') === 'Bol') {
+            return;
+        }
+
         $apiKey = Customsetting::get('laposta_api_key');
 
         if (! $apiKey || ! Customsetting::get('laposta_connected')) {
