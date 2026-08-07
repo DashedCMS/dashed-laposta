@@ -49,7 +49,7 @@ class DashedLapostaSettingsPage extends Page
                 }
 
                 return 'Niet verbonden';
-            })->columnSpan(2), TextInput::make("laposta_api_key_{$site['id']}")->label('API key')->reactive(),];
+            })->columnSpan(2), TextInput::make("laposta_api_key_{$site['id']}")->label(__('API key'))->reactive(),];
             $tabs[] = Tab::make($site['id'])->label(ucfirst($site['name']))->schema($newSchema);
         }
         $tabGroups[] = Tabs::make('Sites')->tabs($tabs);
@@ -70,6 +70,6 @@ class DashedLapostaSettingsPage extends Page
             }
         }
         $this->form->fill($formState);
-        Notification::make()->title('De Dashed Laposta instellingen zijn opgeslagen')->success()->send();
+        Notification::make()->title(__('De Dashed Laposta instellingen zijn opgeslagen'))->success()->send();
     }
 }

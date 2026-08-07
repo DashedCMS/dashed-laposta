@@ -64,7 +64,7 @@ class PopupAPI
     {
         return [
             Select::make('list_id')
-                ->label('Lijst om aan toe te voegen')
+                ->label(__('Lijst om aan toe te voegen'))
                 ->required()
                 ->options(function () {
                     $lists = Customsetting::get('laposta_lists');
@@ -78,19 +78,19 @@ class PopupAPI
                     return $options;
                 }),
             Repeater::make('customFields')
-                ->label('Aangepaste velden')
+                ->label(__('Aangepaste velden'))
                 ->schema([
                     Select::make('field_id')
-                        ->label('Veld uit popup')
+                        ->label(__('Veld uit popup'))
                         ->options([
-                            'email' => 'Email',
-                            'url' => 'Pagina URL',
-                            'referrer' => 'Referrer',
-                            'device_type' => 'Apparaat type',
-                            'locale' => 'Taal',
+                            'email' => __('Email'),
+                            'url' => __('Pagina URL'),
+                            'referrer' => __('Referrer'),
+                            'device_type' => __('Apparaat type'),
+                            'locale' => __('Taal'),
                         ]),
                     TextInput::make('field_name')
-                        ->label('Veld naam in Laposta')
+                        ->label(__('Veld naam in Laposta'))
                         ->required(),
                 ])
                 ->columnSpanFull(),

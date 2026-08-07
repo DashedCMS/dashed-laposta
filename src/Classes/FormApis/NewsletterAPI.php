@@ -55,7 +55,7 @@ class NewsletterAPI implements SupportsEmailBackfill
     {
         return [
             Select::make('list_id')
-                ->label('Lijst om aan toe te voegen')
+                ->label(__('Lijst om aan toe te voegen'))
                 ->required()
                 ->options(function () {
                     $lists = Customsetting::get('laposta_lists');
@@ -69,18 +69,18 @@ class NewsletterAPI implements SupportsEmailBackfill
                     return $options;
                 }),
             Select::make('email_field_id')
-                ->label('Email veld')
+                ->label(__('Email veld'))
                 ->required()
                 ->columnSpanFull()
                 ->options(fn ($record) => $record ? $record->fields()->where('type', 'input')->where('input_type', 'email')->pluck('name', 'id') : []),
             Repeater::make('customFields')
-                ->label('Aangepaste velden')
+                ->label(__('Aangepaste velden'))
                 ->schema([
                     Select::make('field_id')
-                        ->label('Veld')
+                        ->label(__('Veld'))
                         ->options(fn ($record) => $record ? $record->fields()->where('type', 'input')->pluck('name', 'id') : []),
                     TextInput::make('field_name')
-                        ->label('Veld naam in Laposta')
+                        ->label(__('Veld naam in Laposta'))
                         ->required(),
                 ])
                 ->columnSpanFull(),
