@@ -23,7 +23,7 @@ class DashedLapostaSettingsPage extends Page
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-bell';
     protected static bool $shouldRegisterNavigation = false;
     protected static ?string $navigationLabel = 'Laposta instellingen';
-    protected static string|UnitEnum|null $navigationGroup = 'Overige';
+    protected static string|UnitEnum|null $navigationGroup = 'Systeem';
     protected static ?string $title = 'Laposta instellingen';
     protected string $view = 'dashed-core::settings.pages.default-settings';
     public array $data = [];
