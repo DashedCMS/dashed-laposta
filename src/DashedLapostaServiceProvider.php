@@ -6,6 +6,7 @@ use Spatie\LaravelPackageTools\Package;
 use Illuminate\Console\Scheduling\Schedule;
 use Dashed\DashedLaposta\Classes\FormApis\OrderAPI;
 use Dashed\DashedLaposta\Commands\SyncLapostaLists;
+use Dashed\DashedLaposta\Commands\ImportLapostaContacts;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Dashed\DashedLaposta\Classes\FormApis\NewsletterAPI;
 use Dashed\DashedLaposta\Classes\PopupApis\PopupAPI as PopupNewsletterAPI;
@@ -90,6 +91,7 @@ MARKDOWN,
             ->name('dashed-laposta')
             ->hasCommands([
                 SyncLapostaLists::class,
+                ImportLapostaContacts::class,
             ]);
 
         cms()->builder('plugins', [

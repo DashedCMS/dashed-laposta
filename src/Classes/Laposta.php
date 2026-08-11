@@ -52,6 +52,29 @@ class Laposta
         }
     }
 
+    /**
+     * De lijsten zelf, in plaats van ze als Customsetting weg te schrijven zoals
+     * syncLists() doet.
+     */
+    public static function listsFor(?string $siteId = null): array
+    {
+        $apiKey = self::resolveApiKey($siteId);
+
+        if (! $apiKey) {
+            return [];
+        }
+
+        $response = Http::withBasicAuth($apiKey, '')
+            ->withHeaders(['Content-Type' => 'application/json'])
+            ->get(self::baseUrl() . 'list');
+
+        if (! $response->successful()) {
+            return [];
+        }
+
+        return $response->json()['data'] ?? [];
+    }
+
     public static function fields(string $listId, ?string $siteId = null): array
     {
         return self::read('field', $listId, $siteId);
