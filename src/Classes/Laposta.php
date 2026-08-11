@@ -15,11 +15,7 @@ class Laposta
 
     public static function isConnected(?string $siteId = null): bool
     {
-        if (! $siteId) {
-            $siteId = Sites::getActive();
-        }
-
-        $apiKey = Customsetting::get('laposta_api_key', $siteId);
+        $apiKey = self::resolveApiKey($siteId);
         if (! $apiKey) {
             return false;
         }
@@ -39,11 +35,7 @@ class Laposta
 
     public static function syncLists(?string $siteId = null): void
     {
-        if (! $siteId) {
-            $siteId = Sites::getActive();
-        }
-
-        $apiKey = Customsetting::get('laposta_api_key', $siteId);
+        $apiKey = self::resolveApiKey($siteId);
         if (! $apiKey) {
             return;
         }
@@ -77,11 +69,7 @@ class Laposta
      */
     private static function read(string $endpoint, string $listId, ?string $siteId): array
     {
-        if (! $siteId) {
-            $siteId = Sites::getActive();
-        }
-
-        $apiKey = Customsetting::get('laposta_api_key', $siteId);
+        $apiKey = self::resolveApiKey($siteId);
 
         if (! $apiKey) {
             return [];
@@ -96,5 +84,19 @@ class Laposta
         }
 
         return $response->json()['data'] ?? [];
+    }
+
+    /**
+     * De enige plek die weet hoe er ingelogd wordt: vult het site-id aan
+     * met de actieve site als het ontbreekt en geeft de API-sleutel terug,
+     * of null als die er niet is.
+     */
+    private static function resolveApiKey(?string &$siteId): ?string
+    {
+        if (! $siteId) {
+            $siteId = Sites::getActive();
+        }
+
+        return Customsetting::get('laposta_api_key', $siteId) ?: null;
     }
 }
