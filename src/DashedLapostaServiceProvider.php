@@ -6,9 +6,10 @@ use Spatie\LaravelPackageTools\Package;
 use Illuminate\Console\Scheduling\Schedule;
 use Dashed\DashedLaposta\Classes\FormApis\OrderAPI;
 use Dashed\DashedLaposta\Commands\SyncLapostaLists;
-use Dashed\DashedLaposta\Commands\ImportLapostaContacts;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Dashed\DashedLaposta\Classes\FormApis\NewsletterAPI;
+use Dashed\DashedLaposta\Commands\ImportLapostaContacts;
+use Dashed\DashedLaposta\Filament\Actions\LapostaImportAction;
 use Dashed\DashedLaposta\Classes\PopupApis\PopupAPI as PopupNewsletterAPI;
 use Dashed\DashedLaposta\Filament\Pages\Settings\DashedLapostaSettingsPage;
 
@@ -21,6 +22,18 @@ class DashedLapostaServiceProvider extends PackageServiceProvider
         $this->app->booted(function () {
             $schedule = app(Schedule::class);
             $schedule->command(SyncLapostaLists::class)->hourly();
+
+            // De overname-knop ook op de instellingenpagina van de nieuwsbrief.
+            // Deze kant op geregistreerd en niet andersom: het nieuwsbriefpakket
+            // hoort niet te weten dat Laposta bestaat. In booted() omdat de
+            // binding er in de register-fase nog niet is.
+            if (! app()->bound('newsletter') || ! method_exists(app('newsletter'), 'registerSettingsAction')) {
+                return;
+            }
+
+            app('newsletter')->registerSettingsAction(
+                fn (string $siteId) => LapostaImportAction::for($siteId)
+            );
         });
 
         cms()->registerSettingsDocs(

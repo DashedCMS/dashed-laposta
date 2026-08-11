@@ -16,7 +16,7 @@ use Filament\Schemas\Components\Tabs\Tab;
 use Dashed\DashedCore\Models\Customsetting;
 use Filament\Infolists\Components\TextEntry;
 use Dashed\DashedCore\Traits\HasSettingsPermission;
-use Dashed\DashedLaposta\Import\LapostaContactImporter;
+use Dashed\DashedLaposta\Filament\Actions\LapostaImportAction;
 
 class DashedLapostaSettingsPage extends Page
 {
@@ -52,62 +52,25 @@ class DashedLapostaSettingsPage extends Page
      */
     protected function getHeaderActions(): array
     {
+        // Zonder nieuwsbriefmodule is er niets om contacten in te zetten, dus
+        // dan hoort de knop er ook niet te staan.
         if (! app()->bound('newsletter')) {
             return [];
         }
 
-        $sites = collect(Sites::getSites())
-            ->filter(fn (array $site): bool => (bool) Customsetting::get('laposta_connected', $site['id']));
+        $sites = Sites::getSites();
+        $meerdereSites = count($sites) > 1;
 
-        $meerdereSites = $sites->count() > 1;
+        return collect($sites)
+            ->map(function (array $site) use ($meerdereSites): Action {
+                $action = LapostaImportAction::for($site['id']);
 
-        return $sites
-            ->map(fn (array $site): Action => Action::make('importContacts_' . $site['id'])
-                ->label($meerdereSites
-                    ? __('Contacten overnemen uit Laposta') . ' (' . $site['name'] . ')'
-                    : __('Contacten overnemen uit Laposta'))
-                ->icon('heroicon-o-arrow-down-tray')
-                ->requiresConfirmation()
-                ->modalHeading(__('Contacten overnemen uit Laposta'))
-                ->modalDescription(__('De lijsten, velden en contacten uit Laposta worden overgenomen in het CMS. Uitgeschreven contacten blijven uitgeschreven. In Laposta zelf verandert niets, en je kunt dit zo vaak herhalen als je wilt.'))
-                ->modalSubmitActionLabel(__('Overnemen'))
-                ->action(fn () => $this->importContacts($site['id'])))
+                return $meerdereSites
+                    ? $action->label($action->getLabel() . ' (' . $site['name'] . ')')
+                    : $action;
+            })
             ->values()
             ->all();
-    }
-
-    public function importContacts(string $siteId): void
-    {
-        $report = app(LapostaContactImporter::class)->forSite($siteId);
-
-        if ($report->error) {
-            Notification::make()
-                ->title(__('Overnemen is niet gelukt'))
-                ->body($report->error)
-                ->danger()
-                ->send();
-
-            return;
-        }
-
-        // Mislukte lijsten zijn geen half succes: er kan een lijst tussen zitten
-        // waarvan de velden niet opgehaald konden worden, en dan zouden die
-        // contacten zonder veldwaarden binnenkomen.
-        if ($report->failed) {
-            Notification::make()
-                ->title(__('Niet alles is overgenomen'))
-                ->body(__('Van minstens een lijst konden de velden of contacten niet worden opgehaald bij Laposta. Wat er wel binnenkwam: ') . $report->summary())
-                ->warning()
-                ->send();
-
-            return;
-        }
-
-        Notification::make()
-            ->title(__('Contacten overgenomen'))
-            ->body($report->summary())
-            ->success()
-            ->send();
     }
 
     public function form(Schema $schema): Schema
