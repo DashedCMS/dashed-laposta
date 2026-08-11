@@ -7,6 +7,7 @@ namespace Dashed\DashedLaposta\Import;
 use Dashed\DashedCore\Classes\Sites;
 use Dashed\DashedLaposta\Classes\Laposta;
 use Dashed\DashedNewsletter\Models\NewsletterList;
+use Dashed\DashedNewsletter\Models\NewsletterSubscriber;
 
 /**
  * De hele overname op één plek. Zowel het console-command als de knop op de
@@ -44,18 +45,92 @@ class LapostaContactImporter
         $report = new LapostaImportReport();
         $overgenomenOp = now()->format('d-m-Y');
 
+        // Is er een standaardlijst ingesteld, dan komt alles daarop terecht en
+        // spiegelen we de lijstindeling van Laposta niet. Dat is wat een
+        // beheerder bedoelt als hij een standaardlijst kiest: daar horen mijn
+        // contacten. Zonder die instelling blijft het oude gedrag, een lijst per
+        // Laposta-lijst.
+        $defaultList = app('newsletter')->defaultList($siteId);
+
+        $verzameldeContacten = [];
+        $verzameldeVelden = [];
+        $bronnen = [];
+
         foreach ($lists as $entry) {
             $lapostaList = $entry['list'] ?? $entry;
             $lapostaId = (string) ($lapostaList['list_id'] ?? '');
+            $name = (string) ($lapostaList['name'] ?? 'Overgenomen uit Laposta');
 
             if ($onlyListId && $onlyListId !== $lapostaId) {
                 continue;
             }
 
-            $this->importList($report, $lapostaList, $lapostaId, $siteId, $fromEmail, $overgenomenOp);
+            $opgehaald = $this->gather($lapostaId, $siteId, $overgenomenOp);
+
+            if ($opgehaald === null) {
+                $report->addFailedList($name, $lapostaId);
+
+                continue;
+            }
+
+            if ($defaultList) {
+                $verzameldeContacten = array_merge($verzameldeContacten, $opgehaald['contacts']);
+                $verzameldeVelden = array_merge($verzameldeVelden, $opgehaald['fields']);
+                $bronnen[] = $lapostaId;
+
+                continue;
+            }
+
+            $list = $this->findOrCreateList($lapostaId, $name, $siteId, $fromEmail);
+            $this->writeFields($list, $opgehaald['fields']);
+            $this->importContacts($report, $list, $name, $lapostaId, $opgehaald['contacts'], $opgehaald['rejected']);
+        }
+
+        if ($defaultList && $bronnen) {
+            $this->writeFields($defaultList, $verzameldeVelden);
+            $this->importContacts(
+                $report,
+                $defaultList,
+                $defaultList->name,
+                implode(', ', $bronnen),
+                $this->dedupe($verzameldeContacten),
+                [],
+            );
         }
 
         return $report;
+    }
+
+    /**
+     * Hetzelfde adres kan op meer dan een Laposta-lijst staan. Komen die samen
+     * op een lijst, dan wint de niet-actieve status: iemand die zich ergens heeft
+     * uitgeschreven mag niet actief worden omdat hij elders nog aanstond. Zonder
+     * deze regel bepaalt de volgorde van de lijsten de uitkomst.
+     *
+     * @param array<int, \Dashed\DashedNewsletter\Import\ImportedContact> $contacts
+     * @return array<int, \Dashed\DashedNewsletter\Import\ImportedContact>
+     */
+    private function dedupe(array $contacts): array
+    {
+        $perEmail = [];
+
+        foreach ($contacts as $contact) {
+            $key = mb_strtolower(trim($contact->email));
+            $bestaande = $perEmail[$key] ?? null;
+
+            if (! $bestaande) {
+                $perEmail[$key] = $contact;
+
+                continue;
+            }
+
+            if ($bestaande->status === NewsletterSubscriber::STATUS_ACTIVE
+                && $contact->status !== NewsletterSubscriber::STATUS_ACTIVE) {
+                $perEmail[$key] = $contact;
+            }
+        }
+
+        return array_values($perEmail);
     }
 
     public function forActiveSite(?string $fromEmail = null, ?string $onlyListId = null): LapostaImportReport
@@ -64,38 +139,22 @@ class LapostaContactImporter
     }
 
     /**
-     * @param array<string, mixed> $lapostaList
+     * Haalt velden en leden op en vertaalt ze, zonder iets weg te schrijven.
+     *
+     * Eerst allebei ophalen en controleren, vóórdat er een lijst wordt
+     * aangemaakt: een mislukt verzoek mag geen halve overname opleveren
+     * (bijvoorbeeld contacten zonder voornaam omdat de velden er niet kwamen
+     * terwijl de leden wel binnenkwamen).
+     *
+     * @return array{fields: array<int, array{key: string, label: string, type: string}>, contacts: array<int, \Dashed\DashedNewsletter\Import\ImportedContact>, rejected: array<int, array{email: string, reason: string}>}|null
      */
-    private function importList(
-        LapostaImportReport $report,
-        array $lapostaList,
-        string $lapostaId,
-        string $siteId,
-        ?string $fromEmail,
-        string $overgenomenOp,
-    ): void {
-        $name = (string) ($lapostaList['name'] ?? 'Overgenomen uit Laposta');
-
-        // Eerst allebei ophalen en controleren, vóórdat er een lijst wordt
-        // aangemaakt: een mislukt verzoek mag geen halve overname opleveren
-        // (bijvoorbeeld contacten zonder voornaam omdat de velden er niet
-        // kwamen terwijl de leden wel binnenkwamen).
+    private function gather(string $lapostaId, string $siteId, string $overgenomenOp): ?array
+    {
         $lapostaFields = Laposta::fields($lapostaId, $siteId);
         $members = Laposta::members($lapostaId, $siteId);
 
         if ($lapostaFields === null || $members === null) {
-            $report->addFailedList($name, $lapostaId);
-
-            return;
-        }
-
-        $list = $this->findOrCreateList($lapostaId, $name, $siteId, $fromEmail);
-
-        foreach (LapostaContactMapper::fields($lapostaFields) as $field) {
-            $list->fields()->firstOrCreate(
-                ['key' => $field['key']],
-                ['label' => $field['label'], 'type' => $field['type']]
-            );
+            return null;
         }
 
         $contacts = [];
@@ -114,11 +173,43 @@ class LapostaContactImporter
             }
         }
 
+        return [
+            'fields' => LapostaContactMapper::fields($lapostaFields),
+            'contacts' => $contacts,
+            'rejected' => $geweigerd,
+        ];
+    }
+
+    /**
+     * @param array<int, array{key: string, label: string, type: string}> $fields
+     */
+    private function writeFields(NewsletterList $list, array $fields): void
+    {
+        foreach ($fields as $field) {
+            $list->fields()->firstOrCreate(
+                ['key' => $field['key']],
+                ['label' => $field['label'], 'type' => $field['type']]
+            );
+        }
+    }
+
+    /**
+     * @param array<int, \Dashed\DashedNewsletter\Import\ImportedContact> $contacts
+     * @param array<int, array{email: string, reason: string}> $rejected
+     */
+    private function importContacts(
+        LapostaImportReport $report,
+        NewsletterList $list,
+        string $name,
+        string $lapostaId,
+        array $contacts,
+        array $rejected,
+    ): void {
         $result = app('newsletter')->importMany($list, $contacts);
 
         // De mapper wijst een lid al af vóórdat importMany() er ooit van weet,
         // dus telt het hier apart mee in dezelfde slotregel.
-        foreach ($geweigerd as $afgewezen) {
+        foreach ($rejected as $afgewezen) {
             $result->skip($afgewezen['email'], $afgewezen['reason']);
         }
 
