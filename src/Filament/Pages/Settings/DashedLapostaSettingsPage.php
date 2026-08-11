@@ -5,6 +5,7 @@ namespace Dashed\DashedLaposta\Filament\Pages\Settings;
 use UnitEnum;
 use BackedEnum;
 use Filament\Pages\Page;
+use Filament\Actions\Action;
 use Filament\Schemas\Schema;
 use Dashed\DashedCore\Classes\Sites;
 use Filament\Schemas\Components\Tabs;
@@ -15,6 +16,7 @@ use Filament\Schemas\Components\Tabs\Tab;
 use Dashed\DashedCore\Models\Customsetting;
 use Filament\Infolists\Components\TextEntry;
 use Dashed\DashedCore\Traits\HasSettingsPermission;
+use Dashed\DashedLaposta\Import\LapostaContactImporter;
 
 class DashedLapostaSettingsPage extends Page
 {
@@ -38,6 +40,74 @@ class DashedLapostaSettingsPage extends Page
         }
 
         $this->form->fill($formData);
+    }
+
+    /**
+     * Eén knop per verbonden site. Bij één site staat de naam er niet bij, zoals
+     * de rest van het CMS het doet; bij meer sites wel, want anders staan er
+     * twee knoppen die hetzelfde heten en iets anders doen.
+     *
+     * De knop verschijnt alleen als de nieuwsbriefmodule er is. In een project
+     * met wel Laposta en geen nieuwsbrief is er niets om contacten in te zetten.
+     */
+    protected function getHeaderActions(): array
+    {
+        if (! app()->bound('newsletter')) {
+            return [];
+        }
+
+        $sites = collect(Sites::getSites())
+            ->filter(fn (array $site): bool => (bool) Customsetting::get('laposta_connected', $site['id']));
+
+        $meerdereSites = $sites->count() > 1;
+
+        return $sites
+            ->map(fn (array $site): Action => Action::make('importContacts_' . $site['id'])
+                ->label($meerdereSites
+                    ? __('Contacten overnemen uit Laposta') . ' (' . $site['name'] . ')'
+                    : __('Contacten overnemen uit Laposta'))
+                ->icon('heroicon-o-arrow-down-tray')
+                ->requiresConfirmation()
+                ->modalHeading(__('Contacten overnemen uit Laposta'))
+                ->modalDescription(__('De lijsten, velden en contacten uit Laposta worden overgenomen in het CMS. Uitgeschreven contacten blijven uitgeschreven. In Laposta zelf verandert niets, en je kunt dit zo vaak herhalen als je wilt.'))
+                ->modalSubmitActionLabel(__('Overnemen'))
+                ->action(fn () => $this->importContacts($site['id'])))
+            ->values()
+            ->all();
+    }
+
+    public function importContacts(string $siteId): void
+    {
+        $report = app(LapostaContactImporter::class)->forSite($siteId);
+
+        if ($report->error) {
+            Notification::make()
+                ->title(__('Overnemen is niet gelukt'))
+                ->body($report->error)
+                ->danger()
+                ->send();
+
+            return;
+        }
+
+        // Mislukte lijsten zijn geen half succes: er kan een lijst tussen zitten
+        // waarvan de velden niet opgehaald konden worden, en dan zouden die
+        // contacten zonder veldwaarden binnenkomen.
+        if ($report->failed) {
+            Notification::make()
+                ->title(__('Niet alles is overgenomen'))
+                ->body(__('Van minstens een lijst konden de velden of contacten niet worden opgehaald bij Laposta. Wat er wel binnenkwam: ') . $report->summary())
+                ->warning()
+                ->send();
+
+            return;
+        }
+
+        Notification::make()
+            ->title(__('Contacten overgenomen'))
+            ->body($report->summary())
+            ->success()
+            ->send();
     }
 
     public function form(Schema $schema): Schema
