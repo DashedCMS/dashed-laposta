@@ -59,4 +59,42 @@ class Laposta
             Customsetting::set('laposta_lists', $response['data'], $siteId);
         }
     }
+
+    public static function fields(string $listId, ?string $siteId = null): array
+    {
+        return self::read('field', $listId, $siteId);
+    }
+
+    public static function members(string $listId, ?string $siteId = null): array
+    {
+        return self::read('member', $listId, $siteId);
+    }
+
+    /**
+     * Alle leesverzoeken lopen hier langs, zodat er één plek is die weet hoe
+     * er ingelogd wordt en wat er gebeurt als het misgaat: een lege array en
+     * geen halve waarheid.
+     */
+    private static function read(string $endpoint, string $listId, ?string $siteId): array
+    {
+        if (! $siteId) {
+            $siteId = Sites::getActive();
+        }
+
+        $apiKey = Customsetting::get('laposta_api_key', $siteId);
+
+        if (! $apiKey) {
+            return [];
+        }
+
+        $response = Http::withBasicAuth($apiKey, '')
+            ->withHeaders(['Content-Type' => 'application/json'])
+            ->get(self::baseUrl() . $endpoint, ['list_id' => $listId]);
+
+        if (! $response->successful()) {
+            return [];
+        }
+
+        return $response->json()['data'] ?? [];
+    }
 }
