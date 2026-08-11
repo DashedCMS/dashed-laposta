@@ -6,7 +6,6 @@ namespace Dashed\DashedLaposta\Import;
 
 use Dashed\DashedCore\Classes\Sites;
 use Dashed\DashedLaposta\Classes\Laposta;
-use Dashed\DashedCore\Models\Customsetting;
 use Dashed\DashedNewsletter\Models\NewsletterList;
 
 /**
@@ -26,14 +25,9 @@ class LapostaContactImporter
             return LapostaImportReport::fail('De nieuwsbriefmodule (dashed-newsletter) is niet geinstalleerd.');
         }
 
-        $fromEmail = $fromEmail
-            ?: Customsetting::get('site_from_email', $siteId)
-            ?: config('mail.from.address');
-
-        if (! $fromEmail) {
-            return LapostaImportReport::fail('Geen afzenderadres gevonden. Vul er een in bij de algemene instellingen van deze site.');
-        }
-
+        // Geen adres is geen probleem meer: een lijst zonder eigen afzenderadres
+        // valt terug op de algemene instellingen. Wat hier wordt meegegeven is
+        // dus een keuze en geen voorwaarde.
         $lists = Laposta::listsFor($siteId);
 
         // null betekent dat het verzoek mislukte, een lege array dat het account
@@ -58,7 +52,7 @@ class LapostaContactImporter
                 continue;
             }
 
-            $this->importList($report, $lapostaList, $lapostaId, $siteId, (string) $fromEmail, $overgenomenOp);
+            $this->importList($report, $lapostaList, $lapostaId, $siteId, $fromEmail, $overgenomenOp);
         }
 
         return $report;
@@ -77,7 +71,7 @@ class LapostaContactImporter
         array $lapostaList,
         string $lapostaId,
         string $siteId,
-        string $fromEmail,
+        ?string $fromEmail,
         string $overgenomenOp,
     ): void {
         $name = (string) ($lapostaList['name'] ?? 'Overgenomen uit Laposta');
@@ -136,7 +130,7 @@ class LapostaContactImporter
      * Zonder die verwijzing levert elke ronde een nieuwe lijst met dezelfde naam
      * op, en daar kom je later niet meer uit.
      */
-    private function findOrCreateList(string $lapostaId, string $name, string $siteId, string $fromEmail): NewsletterList
+    private function findOrCreateList(string $lapostaId, string $name, string $siteId, ?string $fromEmail): NewsletterList
     {
         $list = NewsletterList::where('site_id', $siteId)
             ->where('settings->laposta_list_id', $lapostaId)
