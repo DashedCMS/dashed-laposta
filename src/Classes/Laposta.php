@@ -55,13 +55,17 @@ class Laposta
     /**
      * De lijsten zelf, in plaats van ze als Customsetting weg te schrijven zoals
      * syncLists() doet.
+     *
+     * Geeft null terug als het verzoek mislukte (of er geen API-sleutel is),
+     * een array als het slaagde. Een lege array betekent dus altijd "geen
+     * lijsten", nooit "kon niet ophalen".
      */
-    public static function listsFor(?string $siteId = null): array
+    public static function listsFor(?string $siteId = null): ?array
     {
         $apiKey = self::resolveApiKey($siteId);
 
         if (! $apiKey) {
-            return [];
+            return null;
         }
 
         $response = Http::withBasicAuth($apiKey, '')
@@ -69,33 +73,37 @@ class Laposta
             ->get(self::baseUrl() . 'list');
 
         if (! $response->successful()) {
-            return [];
+            return null;
         }
 
         return $response->json()['data'] ?? [];
     }
 
-    public static function fields(string $listId, ?string $siteId = null): array
+    public static function fields(string $listId, ?string $siteId = null): ?array
     {
         return self::read('field', $listId, $siteId);
     }
 
-    public static function members(string $listId, ?string $siteId = null): array
+    public static function members(string $listId, ?string $siteId = null): ?array
     {
         return self::read('member', $listId, $siteId);
     }
 
     /**
      * Alle leesverzoeken lopen hier langs, zodat er één plek is die weet hoe
-     * er ingelogd wordt en wat er gebeurt als het misgaat: een lege array en
-     * geen halve waarheid.
+     * er ingelogd wordt en wat er gebeurt als het misgaat.
+     *
+     * Geeft null terug bij een mislukt verzoek (ook een ontbrekende
+     * API-sleutel telt als mislukt) en een array, eventueel leeg, als het
+     * verzoek slaagde. Een lege array bij een mislukt verzoek zou een
+     * aanroeper niet kunnen onderscheiden van een lijst die werkelijk leeg is.
      */
-    private static function read(string $endpoint, string $listId, ?string $siteId): array
+    private static function read(string $endpoint, string $listId, ?string $siteId): ?array
     {
         $apiKey = self::resolveApiKey($siteId);
 
         if (! $apiKey) {
-            return [];
+            return null;
         }
 
         $response = Http::withBasicAuth($apiKey, '')
@@ -103,7 +111,7 @@ class Laposta
             ->get(self::baseUrl() . $endpoint, ['list_id' => $listId]);
 
         if (! $response->successful()) {
-            return [];
+            return null;
         }
 
         return $response->json()['data'] ?? [];

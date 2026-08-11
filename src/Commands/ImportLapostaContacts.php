@@ -51,6 +51,7 @@ class ImportLapostaContacts extends Command
         }
 
         $overgenomenOp = now()->format('d-m-Y');
+        $success = true;
 
         foreach ($lists as $entry) {
             $lapostaList = $entry['list'] ?? $entry;
@@ -60,10 +61,12 @@ class ImportLapostaContacts extends Command
                 continue;
             }
 
-            $this->importList($lapostaList, $lapostaId, $siteId, (string) $fromEmail, $overgenomenOp);
+            if (! $this->importList($lapostaList, $lapostaId, $siteId, (string) $fromEmail, $overgenomenOp)) {
+                $success = false;
+            }
         }
 
-        return self::SUCCESS;
+        return $success ? self::SUCCESS : self::FAILURE;
     }
 
     private function importList(
@@ -72,22 +75,35 @@ class ImportLapostaContacts extends Command
         string $siteId,
         string $fromEmail,
         string $overgenomenOp,
-    ): void {
+    ): bool {
         $name = (string) ($lapostaList['name'] ?? 'Overgenomen uit Laposta');
 
         $this->info('Lijst ' . $name . ' (' . $lapostaId . ')');
 
+        // Eerst allebei ophalen en controleren, vóórdat er een lijst wordt
+        // aangemaakt: een mislukt verzoek mag geen halve overname opleveren
+        // (bijvoorbeeld contacten zonder voornaam omdat de velden er niet
+        // kwamen terwijl de leden wel binnenkwamen).
+        $lapostaFields = Laposta::fields($lapostaId, $siteId);
+        $members = Laposta::members($lapostaId, $siteId);
+
+        if ($lapostaFields === null || $members === null) {
+            $this->error('  kon de velden of leden niet ophalen bij Laposta, lijst overgeslagen.');
+
+            return false;
+        }
+
         $list = $this->findOrCreateList($lapostaId, $name, $siteId, $fromEmail);
 
-        foreach (LapostaContactMapper::fields(Laposta::fields($lapostaId, $siteId)) as $field) {
+        foreach (LapostaContactMapper::fields($lapostaFields) as $field) {
             $list->fields()->firstOrCreate(
                 ['key' => $field['key']],
                 ['label' => $field['label'], 'type' => $field['type']]
             );
         }
 
-        $members = Laposta::members($lapostaId, $siteId);
         $contacts = [];
+        $geweigerd = [];
 
         foreach ($members as $entry) {
             $member = $entry['member'] ?? $entry;
@@ -95,11 +111,20 @@ class ImportLapostaContacts extends Command
             try {
                 $contacts[] = LapostaContactMapper::contact($member, $overgenomenOp);
             } catch (\InvalidArgumentException $e) {
-                $this->warn('  overgeslagen: ' . $e->getMessage());
+                // Nog niet warnen: dat gebeurt hieronder in dezelfde lus als
+                // de afwijzingen van importMany() zelf, zodat elk overgeslagen
+                // lid precies één regel oplevert in plaats van twee.
+                $geweigerd[(string) ($member['email'] ?? '')] = $e->getMessage();
             }
         }
 
         $result = app('newsletter')->importMany($list, $contacts);
+
+        // De mapper wijst een lid al af vóórdat importMany() er ooit van
+        // weet, dus telt het hier apart mee in dezelfde slotregel.
+        foreach ($geweigerd as $email => $reden) {
+            $result->skip($email, $reden);
+        }
 
         $this->info('  aangemaakt: ' . $result->created
             . ', bijgewerkt: ' . $result->updated
@@ -108,6 +133,8 @@ class ImportLapostaContacts extends Command
         foreach ($result->reasons as $email => $reason) {
             $this->warn('  ' . $email . ': ' . $reason);
         }
+
+        return true;
     }
 
     /**
