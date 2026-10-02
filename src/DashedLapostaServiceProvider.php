@@ -102,6 +102,7 @@ MARKDOWN,
 
         $package
             ->name('dashed-laposta')
+            ->hasTranslations()
             ->hasCommands([
                 SyncLapostaLists::class,
                 ImportLapostaContacts::class,
