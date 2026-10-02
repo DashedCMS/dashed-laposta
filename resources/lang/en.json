@@ -1,1 +1,25 @@
-{}
+{
+    "Aangepaste velden": "Custom fields",
+    "API key": "API key",
+    "Apparaat type": "Device type",
+    "Beheer instellingen voor Laposta": "Manage settings for Laposta",
+    "Contacten overgenomen": "Contacts imported",
+    "Contacten overnemen uit Laposta": "Import contacts from Laposta",
+    "De Dashed Laposta instellingen zijn opgeslagen": "The Dashed Laposta settings have been saved",
+    "De lijsten, velden en contacten uit Laposta worden overgenomen in het CMS. Uitgeschreven contacten blijven uitgeschreven. In Laposta zelf verandert niets, en je kunt dit zo vaak herhalen als je wilt.": "The lists, fields and contacts from Laposta are imported into the CMS. Unsubscribed contacts stay unsubscribed. Nothing changes in Laposta itself, and you can repeat this as often as you like.",
+    "Email": "Email",
+    "Email veld": "Email field",
+    "Laposta": "Laposta",
+    "Laposta instellingen": "Laposta settings",
+    "Lijst om aan toe te voegen": "List to add to",
+    "Niet alles is overgenomen": "Not everything was imported",
+    "Overnemen": "Import",
+    "Overnemen is niet gelukt": "Import failed",
+    "Pagina URL": "Page URL",
+    "Referrer": "Referrer",
+    "Taal": "Language",
+    "Van minstens een lijst konden de velden of contacten niet worden opgehaald bij Laposta. Wat er wel binnenkwam: ": "For at least one list, the fields or contacts could not be retrieved from Laposta. What did come in: ",
+    "Veld": "Field",
+    "Veld naam in Laposta": "Field name in Laposta",
+    "Veld uit popup": "Field from popup"
+}
