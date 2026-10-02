@@ -16,6 +16,8 @@ use Filament\Infolists\Components\TextEntry;
 
 class DashedLapostaSettingsPage extends Page
 {
+    use \Dashed\DashedCore\Filament\Concerns\TranslatesPageLabels;
+
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-bell';
     protected static bool $shouldRegisterNavigation = false;
     protected static ?string $navigationLabel = 'Laposta instellingen';
