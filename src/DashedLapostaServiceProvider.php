@@ -21,7 +21,9 @@ class DashedLapostaServiceProvider extends PackageServiceProvider
     {
         $this->app->booted(function () {
             $schedule = app(Schedule::class);
-            $schedule->command(SyncLapostaLists::class)->hourly();
+            $schedule->command(SyncLapostaLists::class)
+                ->dailyAt('04:45')
+                ->when(fn () => SyncLapostaLists::hasWork());
 
             // De overname-knop ook op de instellingenpagina van de nieuwsbrief.
             // Deze kant op geregistreerd en niet andersom: het nieuwsbriefpakket

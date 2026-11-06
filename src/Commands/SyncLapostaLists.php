@@ -4,6 +4,7 @@ namespace Dashed\DashedLaposta\Commands;
 
 use Illuminate\Console\Command;
 use Dashed\DashedCore\Classes\Sites;
+use Dashed\DashedCore\Models\Customsetting;
 use Dashed\DashedLaposta\Classes\Laposta;
 
 class SyncLapostaLists extends Command
@@ -30,6 +31,15 @@ class SyncLapostaLists extends Command
     public function __construct()
     {
         parent::__construct();
+    }
+
+    /**
+     * Zonder API-sleutel doet syncLists() niets. Lukt het lezen niet, dan draait
+     * het commando gewoon.
+     */
+    public static function hasWork(): bool
+    {
+        return rescue(fn () => (bool) Customsetting::get('laposta_api_key', Sites::getActive()), true, false);
     }
 
     /**

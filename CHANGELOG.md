@@ -2,6 +2,11 @@
 
 All notable changes to `dashed-laposta` will be documented in this file.
 
+## v4.1.1 - 2026-11-06
+
+### Changed
+- `sync-laposta-lists` dagelijks en alleen met een API-sleutel.
+
 ## v4.0.15 - 2026-05-05
 
 ### Added
