@@ -2,6 +2,11 @@
 
 All notable changes to `dashed-laposta` will be documented in this file.
 
+## v4.1.2 - 2026-11-06
+
+### Changed
+- Geplande taken starten op een vast eigen tijdstip per site (`ScheduleSpread`), met de oude tijd op een oudere core.
+
 ## v4.1.1 - 2026-11-06
 
 ### Changed
