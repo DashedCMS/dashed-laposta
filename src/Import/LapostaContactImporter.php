@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Dashed\DashedLaposta\Import;
 
+use Throwable;
 use Dashed\DashedCore\Classes\Sites;
 use Dashed\DashedLaposta\Classes\Laposta;
+use Dashed\DashedCore\Models\BackgroundTask;
 use Dashed\DashedNewsletter\Models\NewsletterList;
 use Dashed\DashedNewsletter\Models\NewsletterSubscriber;
 
@@ -42,6 +44,34 @@ class LapostaContactImporter
             return LapostaImportReport::fail('Er staan geen lijsten in dit Laposta-account.');
         }
 
+        // In het takenicoon van dashed-core, met een lijst per stap. Zonder
+        // eigen melding: de knop toont zelf de uitkomst en het command schrijft
+        // hem uit. Achter class_exists, want een oudere dashed-core kent
+        // BackgroundTask nog niet.
+        $task = class_exists(BackgroundTask::class)
+            ? BackgroundTask::begin('laposta-import', __('Contacten overnemen uit Laposta'), $onlyListId ? 1 : count($lists), rescue(fn () => auth()->id(), null, false), notify: false)
+            : null;
+
+        try {
+            $report = $this->importLists($lists, $siteId, $fromEmail, $onlyListId, $task);
+        } catch (Throwable $e) {
+            $task?->fail($e);
+
+            throw $e;
+        }
+
+        $task?->finish($report->failed
+            ? __('Niet alles is overgenomen: :samenvatting.', ['samenvatting' => $report->summary()])
+            : $report->summary() . '.');
+
+        return $report;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $lists
+     */
+    private function importLists(array $lists, string $siteId, ?string $fromEmail, ?string $onlyListId, ?BackgroundTask $task = null): LapostaImportReport
+    {
         $report = new LapostaImportReport();
         $overgenomenOp = now()->format('d-m-Y');
 
@@ -69,11 +99,15 @@ class LapostaContactImporter
 
             if ($opgehaald === null) {
                 $report->addFailedList($name, $lapostaId);
+                $task?->advance();
 
                 continue;
             }
 
             if ($defaultList) {
+                // Het wegschrijven gebeurt na de lus in één keer; de balk
+                // telt hier het ophalen.
+                $task?->advance();
                 $verzameldeContacten = array_merge($verzameldeContacten, $opgehaald['contacts']);
                 $verzameldeVelden = array_merge($verzameldeVelden, $opgehaald['fields']);
                 $bronnen[] = $lapostaId;
@@ -84,6 +118,7 @@ class LapostaContactImporter
             $list = $this->findOrCreateList($lapostaId, $name, $siteId, $fromEmail);
             $this->writeFields($list, $opgehaald['fields']);
             $this->importContacts($report, $list, $name, $lapostaId, $opgehaald['contacts'], $opgehaald['rejected']);
+            $task?->advance();
         }
 
         if ($defaultList && $bronnen) {

@@ -2,6 +2,11 @@
 
 All notable changes to `dashed-laposta` will be documented in this file.
 
+## v4.2.0 - 2026-11-16
+
+### Added
+- Het taakcentrum (het tabje Bezig) toont nu de import uit Laposta met voortgang per lijst.
+
 ## v4.1.2 - 2026-11-06
 
 ### Changed
